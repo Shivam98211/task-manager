@@ -9,6 +9,7 @@ import {
   FiLogOut,
   FiPlus,
   FiRefreshCw,
+  FiTrash2,
   FiUsers,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -167,6 +168,26 @@ function Dashboard() {
       setMessage("Task status updated");
     } catch (error) {
       setMessage(error.response?.data?.message || "Unable to update task");
+    }
+  };
+
+  const deleteUser = async (user) => {
+    const confirmed = window.confirm(
+      `Delete ${user.name} from the team? Their assigned tasks will become unassigned.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      await API.delete(`/users/${user._id}`, authConfig);
+      await fetchWorkspace();
+      setMessage("Team member deleted successfully");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Unable to delete team member");
     }
   };
 
@@ -540,15 +561,29 @@ function Dashboard() {
                   {users.map((user) => (
                     <div
                       key={user._id}
-                      className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3"
+                      className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-4 py-3"
                     >
-                      <div>
+                      <div className="min-w-0">
                         <p className="font-bold">{user.name}</p>
-                        <p className="text-xs text-slate-500">{user.email}</p>
+                        <p className="truncate text-xs text-slate-500">
+                          {user.email}
+                        </p>
                       </div>
-                      <span className="rounded-full bg-white px-3 py-1 text-xs font-bold capitalize text-slate-700">
-                        {user.role}
-                      </span>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-bold capitalize text-slate-700">
+                          {user.role}
+                        </span>
+                        {isAdmin && currentUser?._id !== user._id && (
+                          <button
+                            type="button"
+                            onClick={() => deleteUser(user)}
+                            title="Delete team member"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-rose-100 bg-white text-rose-600 transition hover:border-rose-200 hover:bg-rose-50"
+                          >
+                            <FiTrash2 />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
