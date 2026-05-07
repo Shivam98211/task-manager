@@ -129,7 +129,7 @@ function Login() {
 
             <div>
               <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
-                Welcome back
+                Welcome
               </p>
               <h2 className="mt-2 text-3xl font-bold">Login to workspace</h2>
               <p className="mt-3 text-sm leading-6 text-slate-500">
