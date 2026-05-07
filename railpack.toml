@@ -1,5 +1,0 @@
-[build]
-cmd = "cd server && npm ci"
-
-[start]
-cmd = "cd server && npm start"

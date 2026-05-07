@@ -1,0 +1,13 @@
+{
+  "name": "task-manager-railway",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Railway deployment entrypoint for the task manager API.",
+  "scripts": {
+    "build": "npm --prefix server ci",
+    "start": "npm --prefix server start"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
