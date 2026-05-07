@@ -2,13 +2,43 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const normalizeEmail = (email) => email.trim().toLowerCase();
+
 
 // REGISTER
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    const userExists = await User.findOne({ email });
+    if (!name || name.trim().length < 2) {
+      return res.status(400).json({
+        message: "Name must be at least 2 characters",
+      });
+    }
+
+    if (!email || !emailPattern.test(email.trim())) {
+      return res.status(400).json({
+        message: "Enter a valid email address",
+      });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    if (role && !["admin", "member"].includes(role)) {
+      return res.status(400).json({
+        message: "Select a valid role",
+      });
+    }
+
+    const safeEmail = normalizeEmail(email);
+
+    const userExists = await User.findOne({ email: safeEmail });
 
     if (userExists) {
       return res.status(400).json({
@@ -19,21 +49,21 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: safeEmail,
       password: hashedPassword,
-      role,
+      role: role || "member",
     });
 
     res.status(201).json({
-  message: "User registered successfully",
-  user: {
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  },
-});
+      message: "User registered successfully",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
 
   } catch (error) {
     res.status(500).json({
@@ -49,7 +79,19 @@ exports.login = async (req, res) => {
 
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    if (!email || !emailPattern.test(email.trim())) {
+      return res.status(400).json({
+        message: "Enter a valid email address",
+      });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    const user = await User.findOne({ email: normalizeEmail(email) });
 
     if (!user) {
       return res.status(400).json({
@@ -83,11 +125,11 @@ exports.login = async (req, res) => {
       message: "Login successful",
       token,
       user: {
-  _id: user._id,
-  name: user.name,
-  email: user.email,
-  role: user.role,
-},
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
 
   } catch (error) {

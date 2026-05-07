@@ -10,6 +10,7 @@ import {
 import { useNavigate, Link } from "react-router-dom";
 
 import API from "../services/api";
+import { validateEmail, validatePassword } from "../utils/validation";
 
 function Login() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ function Login() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -25,11 +27,28 @@ function Login() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+
+    setFieldErrors({
+      ...fieldErrors,
+      [e.target.name]: "",
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const nextFieldErrors = {
+      email: validateEmail(formData.email),
+      password: validatePassword(formData.password),
+    };
+
+    setFieldErrors(nextFieldErrors);
+
+    if (Object.values(nextFieldErrors).some(Boolean)) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -141,6 +160,11 @@ function Login() {
                     required
                   />
                 </div>
+                {fieldErrors.email && (
+                  <p className="mt-2 text-sm font-semibold text-rose-600">
+                    {fieldErrors.email}
+                  </p>
+                )}
               </label>
 
               <label className="block">
@@ -159,6 +183,11 @@ function Login() {
                     required
                   />
                 </div>
+                {fieldErrors.password && (
+                  <p className="mt-2 text-sm font-semibold text-rose-600">
+                    {fieldErrors.password}
+                  </p>
+                )}
               </label>
             </div>
 
